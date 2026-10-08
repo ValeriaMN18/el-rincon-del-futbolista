@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El Rincón del Futbolista</title>
+<style>
+:root{--bg:#f5f7f4;--card:#fff;--tx:#14231a;--mu:#5d6b62;--ac:#1b8a43;--ac2:#fff;--bd:#dbe3dc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1712;--card:#18221b;--tx:#e8f0ea;--mu:#9fb0a4;--ac:#3fbf6b;--ac2:#08140c;--bd:#2a3a2f}}
+:root[data-theme="dark"]{--bg:#0f1712;--card:#18221b;--tx:#e8f0ea;--mu:#9fb0a4;--ac:#3fbf6b;--ac2:#08140c;--bd:#2a3a2f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ac);color:var(--ac2);display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+header h1{font-size:1.15rem;margin:0}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:9px 14px;background:var(--ac);color:var(--ac2);font-weight:600}
+button.sec{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+header button{background:var(--ac2);color:var(--ac)}
+main{max-width:1000px;margin:0 auto;padding:16px}
+.filtros{display:grid;grid-template-columns:2fr 1fr 1.4fr;gap:10px;margin-bottom:16px}
+@media(max-width:640px){.filtros{grid-template-columns:1fr}}
+input,select,textarea{font:inherit;width:100%;padding:9px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+label{font-size:.85rem;color:var(--mu);display:block;margin-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.emo{font-size:2.6rem;text-align:center}
+.cat{font-size:.75rem;color:var(--ac);font-weight:700;text-transform:uppercase}
+.card h3{margin:0;font-size:1rem}
+.card p{margin:0;color:var(--mu);font-size:.85rem;flex:1}
+.pr{font-size:1.2rem;font-weight:800}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10;justify-content:flex-end}
+#ov.on{display:flex}
+#panel{background:var(--bg);width:min(440px,100%);height:100%;overflow:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.qty button{padding:2px 9px}
+.tot{font-size:1.3rem;font-weight:800;margin:12px 0}
+.clabe{font-size:1.25rem;font-weight:800;letter-spacing:1px;word-break:break-all;background:var(--card);border:1px dashed var(--ac);border-radius:8px;padding:10px;margin:6px 0}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin:10px 0}
+.vacio{color:var(--mu);text-align:center;padding:30px 0}
+.f{margin-bottom:10px}
+</style>
+</head>
+<body>
+<header><h1>⚽ El Rincón del Futbolista</h1><button id="btnCarrito">🛒 Carrito (<span id="cnt">0</span>)</button></header>
+<main>
+  <div class="filtros">
+    <div><label for="q">Buscar por nombre</label><input id="q" type="search" placeholder="Ej. creatina, proteína…"></div>
+    <div><label for="cat">Categoría</label><select id="cat"></select></div>
+    <div><label for="pmax">Precio máximo: <b id="pv"></b></label><input id="pmax" type="range" min="0" max="1000" step="50"></div>
+  </div>
+  <div id="res" class="vacio"></div>
+  <div id="grid" class="grid"></div>
+</main>
+<div id="ov"><div id="panel"></div></div>
+
+<script type="application/json" id="productos">
+[
+  {"id":1,"nombre":"Proteína Whey Sabor Chocolate 2 lb","categoria":"Proteínas","precio":749,"emoji":"🥛","descripcion":"24 g de proteína por porción para recuperar después del partido."},
+  {"id":2,"nombre":"Proteína Isolada Vainilla 1 kg","categoria":"Proteínas","precio":899,"emoji":"💪","descripcion":"Baja en lactosa y carbohidratos, de rápida absorción."},
+  {"id":3,"nombre":"Creatina Monohidratada 300 g","categoria":"Creatina","precio":389,"emoji":"⚡","descripcion":"Más fuerza y potencia en sprints y arranques."},
+  {"id":4,"nombre":"Creatina en Cápsulas 120 caps","categoria":"Creatina","precio":329,"emoji":"💊","descripcion":"Práctica para llevar en la maleta de entrenamiento."},
+  {"id":5,"nombre":"Electrolitos en Polvo Limón 30 sobres","categoria":"Hidratación","precio":359,"emoji":"💧","descripcion":"Repone sodio y potasio en partidos largos y calor."},
+  {"id":6,"nombre":"Bebida Isotónica Naranja 12 pzas","categoria":"Hidratación","precio":289,"emoji":"🧃","descripcion":"Lista para tomar en el medio tiempo."},
+  {"id":7,"nombre":"Geles Energéticos 12 pzas","categoria":"Energía","precio":319,"emoji":"🍯","descripcion":"Energía rápida de carbohidratos para el segundo tiempo."},
+  {"id":8,"nombre":"Pre-Entreno Cafeína 30 porciones","categoria":"Energía","precio":549,"emoji":"🔥","descripcion":"Enfoque y energía antes de entrenar."},
+  {"id":9,"nombre":"Multivitamínico Deportivo 90 tabs","categoria":"Vitaminas","precio":259,"emoji":"🍊","descripcion":"Complemento diario de vitaminas y minerales."},
+  {"id":10,"nombre":"Omega 3 1000 mg 120 caps","categoria":"Vitaminas","precio":299,"emoji":"🐟","descripcion":"Apoyo para articulaciones y salud cardiovascular."},
+  {"id":11,"nombre":"Magnesio + Zinc 60 caps","categoria":"Recuperación","precio":219,"emoji":"🌙","descripcion":"Ayuda al descanso muscular y al sueño."},
+  {"id":12,"nombre":"BCAA 2:1:1 Frutos Rojos 300 g","categoria":"Recuperación","precio":429,"emoji":"🍓","descripcion":"Aminoácidos para reducir la fatiga muscular."}
+]
+</script>
+
+<script>
+// DATOS DE EJEMPLO: cambia estos valores por los reales
+const BANCO={banco:"Banco de Ejemplo",titular:"Titular de Ejemplo",clabe:"012180012345678901",correo:"valerijknegre@gmail.com"};
+// Datos de tu proyecto en Supabase (Project Settings > API). La clave "anon" es pública por diseño:
+// la seguridad la da el RLS de schema.sql, que solo permite INSERTAR pedidos. Nunca pongas aquí la clave "service_role".
+const SUPABASE_URL="https://cuvpsvrujkvmskgcdqbr.supabase.co";
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN1dnBzdnJ1amt2bXNrZ2NkcWJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTcyMjcsImV4cCI6MjEwNzA3MzIyN30.tNZkzZYtbTFUHPyk7bYil_7N0A1UBEVQLvqNY2FQMN4";
+let enviando=false;
+function nuevoFolio(){return "RF-"+Date.now().toString(36).slice(-5).toUpperCase()+Math.floor(Math.random()*10)}
+const P=JSON.parse(document.getElementById("productos").textContent);
+const $=id=>document.getElementById(id);
+const mx=n=>n.toLocaleString("es-MX",{style:"currency",currency:"MXN"});
+let cart={},cliente={nombre:"",tel:"",dir:""},folio="";
+try{cart=JSON.parse(localStorage.getItem("rf_cart")||"{}")}catch(e){}
+function save(){try{localStorage.setItem("rf_cart",JSON.stringify(cart))}catch(e){}}
+
+// Filtros
+const cats=["Todas",...new Set(P.map(p=>p.categoria))];
+$("cat").innerHTML=cats.map(c=>`<option>${c}</option>`).join("");
+const maxP=Math.ceil(Math.max(...P.map(p=>p.precio))/50)*50;
+$("pmax").max=maxP;$("pmax").value=maxP;
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function catalogo(){
+  const q=norm($("q").value),c=$("cat").value,m=+$("pmax").value;
+  $("pv").textContent=mx(m);
+  const l=P.filter(p=>(!q||norm(p.nombre).includes(q))&&(c==="Todas"||p.categoria===c)&&p.precio<=m);
+  $("res").textContent=l.length?"":"No encontramos productos con esos filtros.";
+  $("grid").innerHTML=l.map(p=>`<div class="card"><div class="emo">${p.emoji}</div><span class="cat">${p.categoria}</span><h3>${p.nombre}</h3><p>${p.descripcion}</p><div class="pr">${mx(p.precio)}</div><button onclick="add(${p.id})">Agregar al carrito</button></div>`).join("");
+}
+["q","cat","pmax"].forEach(i=>$(i).addEventListener("input",catalogo));
+
+// Carrito
+function total(){return Object.entries(cart).reduce((s,[id,q])=>s+P.find(p=>p.id==id).precio*q,0)}
+function cuenta(){$("cnt").textContent=Object.values(cart).reduce((a,b)=>a+b,0)}
+function add(id){cart[id]=(cart[id]||0)+1;save();cuenta();abrir()}
+function cambia(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];save();cuenta();vistaCarrito()}
+function abrir(){$("ov").classList.add("on");vistaCarrito()}
+function cerrar(){$("ov").classList.remove("on")}
+$("btnCarrito").onclick=abrir;
+$("ov").addEventListener("click",e=>{if(e.target.id==="ov")cerrar()});
+
+function vistaCarrito(){
+  const ids=Object.keys(cart);
+  $("panel").innerHTML=`<div class="row"><h2 style="margin:0">Tu carrito</h2><button class="sec" onclick="cerrar()">Cerrar</button></div>`+
+  (ids.length?ids.map(id=>{const p=P.find(x=>x.id==id);return `<div class="row"><div>${p.emoji} ${p.nombre}<br><small>${mx(p.precio)}</small></div><div class="qty"><button onclick="cambia(${id},-1)">−</button> ${cart[id]} <button onclick="cambia(${id},1)">+</button></div></div>`}).join("")+
+  `<div class="tot">Total: ${mx(total())}</div><button onclick="vistaDatos()" style="width:100%">Continuar con la compra</button>`
+  :`<div class="vacio">Tu carrito está vacío.</div>`);
+}
+function vistaDatos(){
+  $("panel").innerHTML=`<div class="row"><h2 style="margin:0">Tus datos</h2><button class="sec" onclick="vistaCarrito()">Volver</button></div>
+  <div class="f"><label>Nombre completo</label><input id="n" value="${cliente.nombre}"></div>
+  <div class="f"><label>WhatsApp / teléfono</label><input id="t" value="${cliente.tel}"></div>
+  <div class="f"><label>Dirección de envío</label><textarea id="d" rows="3">${cliente.dir}</textarea></div>
+  <div class="tot">Total: ${mx(total())}</div>
+  <button onclick="vistaPago()" style="width:100%">Confirmar pedido y ver datos para transferir</button>`;
+}
+async function vistaPago(){
+  if(enviando)return;
+  cliente={nombre:$("n").value.trim(),tel:$("t").value.trim(),dir:$("d").value.trim()};
+  const dig=cliente.tel.replace(/\D/g,"").length;
+  if(cliente.nombre.length<2){alert("Escribe tu nombre completo.");return}
+  if(dig<7||cliente.tel.length>30){alert("Escribe un teléfono válido (10 dígitos, por ejemplo 5512345678).");return}
+  if(cliente.dir.length<5){alert("Escribe tu dirección de envío completa.");return}
+  enviando=true;folio=nuevoFolio();
+  const guardado=await guardarPedido();
+  enviando=false;
+  const lineas=Object.keys(cart).map(id=>{const p=P.find(x=>x.id==id);return `- ${cart[id]} x ${p.nombre} (${mx(p.precio*cart[id])})`}).join("\n");
+  const cuerpo=`Hola, adjunto mi comprobante de pago.\n\nFolio: ${folio}\nNombre: ${cliente.nombre}\nTeléfono: ${cliente.tel}\nDirección: ${cliente.dir}\n\nPedido:\n${lineas}\n\nTotal transferido: ${mx(total())}`;
+  const href=`mailto:${BANCO.correo}?subject=${encodeURIComponent("Comprobante de pago "+folio)}&body=${encodeURIComponent(cuerpo)}`;
+  $("panel").innerHTML=`<div class="row"><h2 style="margin:0">Paga por transferencia</h2></div>
+  ${guardado===false?'<div class="box">⚠️ No pudimos registrar tu pedido automáticamente. Envía el comprobante por correo con tu folio y lo registraremos manualmente.</div>':''}<div class="tot">Monto exacto: ${mx(total())}</div>
+  <div class="box"><b>Banco:</b> ${BANCO.banco}<br><b>Titular:</b> ${BANCO.titular}<br><b>CLABE:</b><div class="clabe" id="cl">${BANCO.clabe}</div>
+  <button class="sec" onclick="copiar()" id="bc">Copiar CLABE</button><br><br><b>Concepto / referencia:</b> ${folio}</div>
+  <div class="box"><b>Siguientes pasos</b><ol style="padding-left:18px;margin:6px 0">
+  <li>Haz la transferencia por <b>${mx(total())}</b> con el concepto <b>${folio}</b>.</li>
+  <li>Envía tu comprobante a <b>${BANCO.correo}</b> indicando tu folio.</li>
+  <li>Confirmaremos tu pago y coordinaremos el envío.</li></ol></div>
+  <a href="${href}"><button style="width:100%">Enviar comprobante por correo</button></a>
+  <p style="color:var(--mu);font-size:.8rem">Recuerda adjuntar la imagen o PDF de tu comprobante al correo.</p>
+  <button class="sec" style="width:100%" onclick="cart={};save();cuenta();cerrar()">Ya pagué, vaciar carrito</button>`;
+}
+async function guardarPedido(){
+  if(!SUPABASE_URL)return null;
+  for(let i=0;i<3;i++){
+    const pedido={folio,nombre:cliente.nombre,telefono:cliente.tel,direccion:cliente.dir,total:total(),
+      productos:Object.keys(cart).map(id=>{const p=P.find(x=>x.id==id);return {id:p.id,nombre:p.nombre,cantidad:cart[id],precio:p.precio}})};
+    try{
+      const r=await fetch(SUPABASE_URL+"/rest/v1/pedidos",{method:"POST",
+        headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json",Prefer:"return=minimal"},
+        body:JSON.stringify(pedido)});
+      if(r.ok)return true;
+      if(r.status===409){folio=nuevoFolio();continue}  // folio repetido: generar otro
+      return false;
+    }catch(e){return false}
+  }
+  return false;
+}
+function copiar(){
+  try{navigator.clipboard.writeText(BANCO.clabe)}catch(e){}
+  $("bc").textContent="¡Copiada!";
+}
+catalogo();cuenta();
+</script>
+</body>
+</html>
